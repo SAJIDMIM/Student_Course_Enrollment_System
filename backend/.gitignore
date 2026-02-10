@@ -1,6 +1,6 @@
-cd backend
-@'
+# ===============================
 # Logs
+# ===============================
 logs
 *.log
 npm-debug.log*
@@ -9,39 +9,52 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# ===============================
 # Dependencies
+# ===============================
 node_modules/
 
-# Environment variables
+# ===============================
+# Environment Variables (DO NOT PUSH)
+# ===============================
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# Keep .env.example for templates
+# Allow only example template
 !.env.example
 
-# Runtime data
+# ===============================
+# Runtime
+# ===============================
 pids
 *.pid
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
+# ===============================
+# Coverage
+# ===============================
 coverage/
 .nyc_output
 
-# Build outputs
+# ===============================
+# Build Output
+# ===============================
 dist/
 build/
 out/
 
-# OS
+# ===============================
+# OS Files
+# ===============================
 .DS_Store
 Thumbs.db
 
+# ===============================
 # IDE
+# ===============================
 .vscode/
 .idea/
-'@ | Out-File -FilePath .gitignore -Encoding UTF8
