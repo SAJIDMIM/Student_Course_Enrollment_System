@@ -26,25 +26,60 @@ if (process.env.MONGO_URI) {
 }
 
 // ===========================
-// Routes
+// SIMPLE AUTH ENDPOINT
+// ===========================
+app.post('/api/auth/login', (req, res) => {
+  const { email, password } = req.body;
+  
+  const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+
+  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
+    return res.status(500).json({
+      success: false,
+      message: "Server configuration error"
+    });
+  }
+
+  if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
+    return res.status(200).json({
+      success: true,
+      email: ADMIN_EMAIL,
+      role: "admin",
+      token: "demo-token-" + Date.now(),
+      message: "Login successful"
+    });
+  }
+
+  return res.status(401).json({
+    success: false,
+    message: "Invalid email or password"
+  });
+});
+
+// ===========================
+// Student Routes
 // ===========================
 app.use('/api/students', studentRoutes);
 
-// Test route
+// ===========================
+// Health Check Route
+// ===========================
 app.get('/', (req, res) => {
   res.json({
     message: 'Student Enrollment API is running 🚀',
     database: 'Connected to MongoDB',
-    endpoints: {
-      students: 'GET /api/students',
-      createStudent: 'POST /api/students',
-      getStudent: 'GET /api/students/:id',
-      updateStudent: 'PUT /api/students/:id',
-      deleteStudent: 'DELETE /api/students/:id',
-      getByStatus: 'GET /api/students/status/:status',
-      getByCourse: 'GET /api/students/course/:course',
-      search: 'GET /api/students/search/:query'
-    }
+    authentication: 'POST /api/auth/login'
+  });
+});
+
+// ===========================
+// 404 Handler
+// ===========================
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: `Cannot ${req.method} ${req.originalUrl}`
   });
 });
 
@@ -58,6 +93,9 @@ app.use(errorMiddleware);
 // ===========================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT} 🚀`);
-  console.log(`API available at http://localhost:${PORT}/api/students`);
+  console.log(`\n✅ Server running on port ${PORT} 🚀`);
+  console.log(`📍 API: http://localhost:${PORT}`);
+  console.log(`🔐 Auth: http://localhost:${PORT}/api/auth/login\n`);
 });
+
+module.exports = app;
