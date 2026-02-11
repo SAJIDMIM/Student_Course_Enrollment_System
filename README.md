@@ -65,18 +65,6 @@ MongoDB database integration
 
 Responsive UI design
 
-Out of Scope
-Student self-registration portal
-
-Payment processing
-
-Course management (adding/editing courses)
-
-Instructor/teacher dashboard
-
-Reporting and analytics
-
-Email notifications
 
 🎯 Objectives
 
@@ -120,10 +108,6 @@ Express.js for RESTful API architecture
 
 MongoDB with Mongoose ODM for data modeling
 
-JSON Web Tokens (JWT) for secure authentication
-
-Bcrypt.js for password hashing
-
 CORS for cross-origin resource sharing
 
 Dotenv for environment variable management
@@ -144,9 +128,7 @@ VS Code as the primary code editor
 ✨ Key Features
 
 Authentication System
-Secure login page with JWT token generation
-
-Password encryption using bcrypt
+Secure login page with simple username and password  password
 
 Protected routes accessible only to authenticated admins
 
