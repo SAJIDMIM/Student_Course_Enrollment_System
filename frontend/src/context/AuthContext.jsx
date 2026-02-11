@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     // Hardcoded admin login
     const ADMIN_CREDENTIALS = {
       email: "admin@campus.com",
-      password: "admin123",
+      password: "Admin123",
     };
 
     if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {

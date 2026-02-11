@@ -9,10 +9,7 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          {/* Login page */}
           <Route path="/login" element={<Login />} />
-
-          {/* Protected Dashboard */}
           <Route
             path="/"
             element={
@@ -21,8 +18,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
-          {/* Catch-all: redirect unknown routes to login */}
           <Route path="*" element={<Navigate to="/login" />} />
         </Routes>
       </AuthProvider>
