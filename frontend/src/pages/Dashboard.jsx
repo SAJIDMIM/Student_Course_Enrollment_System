@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Plus, 
-  Search,  // ← This was missing!
+  Search,
   Filter, 
   X, 
   ChevronDown, 
@@ -15,7 +15,7 @@ import GlassLayout from "../components/GlassLayout";
 import { useAuth } from "../context/AuthContext";
 import ManageStudents from "../components/ManageStudents";
 import StudentFormModal from "../components/StudentFormModal";
-import axios from "axios"; // ← Add this!
+import axios from "axios";
 
 const courseOptions = [
   "BSc (Hons) in Computer Science",
@@ -114,6 +114,34 @@ const Dashboard = () => {
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
   const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const prevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
+
+  // Generate page numbers to display (with ellipsis for many pages)
+  const getPageNumbers = () => {
+    const delta = 2; // Number of pages to show on each side of current page
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
+        range.push(i);
+      }
+    }
+
+    range.forEach((i) => {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push('...');
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    });
+
+    return rangeWithDots;
+  };
 
   // Apply Filter
   const applyFilter = () => {
@@ -384,62 +412,112 @@ const Dashboard = () => {
 
         {/* Pagination and Table Footer */}
         {students.length > 0 && filteredStudents.length > 0 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-            <div className="text-sm text-gray-400">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="flex flex-col sm:flex-row items-center justify-between gap-4 px-2"
+          >
+            {/* Records Info */}
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-sm text-gray-400"
+            >
               Showing {indexOfFirstRecord + 1} to {Math.min(indexOfLastRecord, filteredStudents.length)} of {filteredStudents.length} students
               {filteredStudents.length !== students.length && ` (filtered from ${students.length} total)`}
-            </div>
+            </motion.div>
 
+            {/* Animated Pagination Controls - < 1 2 3 ... 10 > */}
             {totalPages > 1 && (
-              <div className="flex items-center gap-2">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.4 }}
+                className="flex items-center gap-1 sm:gap-2"
+              >
+                {/* Previous Button */}
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.1, backgroundColor: "rgba(94, 59, 215, 0.2)" }}
                   whileTap={{ scale: 0.95 }}
                   onClick={prevPage}
                   disabled={currentPage === 1}
-                  className={`p-2 rounded-lg border border-white/10 flex items-center justify-center ${
-                    currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10 transition-colors'
-                  }`}
+                  className={`
+                    p-2 rounded-lg border border-white/10 flex items-center justify-center
+                    ${currentPage === 1 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:bg-white/10 transition-all duration-200'
+                    }
+                  `}
                 >
                   <ChevronLeft className="h-4 w-4 text-gray-400" />
                 </motion.button>
-                
+
+                {/* Page Numbers with Animation */}
                 <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((number) => (
-                    <motion.button
-                      key={number}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => paginate(number)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                        currentPage === number
-                          ? 'bg-gradient-to-r from-[#5e3bd7] to-[#341f97] text-white'
-                          : 'text-gray-400 hover:bg-white/10'
-                      }`}
-                    >
-                      {number}
-                    </motion.button>
+                  {getPageNumbers().map((page, index) => (
+                    page === '...' ? (
+                      <span
+                        key={`ellipsis-${index}`}
+                        className="w-8 h-8 flex items-center justify-center text-gray-400 text-sm"
+                      >
+                        ...
+                      </span>
+                    ) : (
+                      <motion.button
+                        key={page}
+                        whileHover={{ 
+                          scale: 1.1,
+                          backgroundColor: currentPage === page 
+                            ? 'linear-gradient(90deg, #5e3bd7, #341f97)' 
+                            : 'rgba(94, 59, 215, 0.2)'
+                        }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => paginate(page)}
+                        className={`
+                          w-8 h-8 rounded-lg text-sm font-medium transition-all duration-200
+                          ${currentPage === page
+                            ? 'bg-gradient-to-r from-[#5e3bd7] to-[#341f97] text-white shadow-lg'
+                            : 'text-gray-400 hover:text-white border border-white/10'
+                          }
+                        `}
+                      >
+                        {page}
+                      </motion.button>
+                    )
                   ))}
                 </div>
 
+                {/* Next Button */}
                 <motion.button
-                  whileHover={{ scale: 1.05 }}
+                  whileHover={{ scale: 1.1, backgroundColor: "rgba(94, 59, 215, 0.2)" }}
                   whileTap={{ scale: 0.95 }}
                   onClick={nextPage}
                   disabled={currentPage === totalPages}
-                  className={`p-2 rounded-lg border border-white/10 flex items-center justify-center ${
-                    currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/10 transition-colors'
-                  }`}
+                  className={`
+                    p-2 rounded-lg border border-white/10 flex items-center justify-center
+                    ${currentPage === totalPages 
+                      ? 'opacity-50 cursor-not-allowed' 
+                      : 'hover:bg-white/10 transition-all duration-200'
+                    }
+                  `}
                 >
                   <ChevronRight className="h-4 w-4 text-gray-400" />
                 </motion.button>
-              </div>
+              </motion.div>
             )}
 
-            <p className="text-sm text-gray-500">
+            {/* Last Updated */}
+            <motion.p
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="text-sm text-gray-500"
+            >
               Last updated: {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
-            </p>
-          </div>
+            </motion.p>
+          </motion.div>
         )}
       </div>
 
