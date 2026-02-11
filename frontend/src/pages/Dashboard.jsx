@@ -9,12 +9,14 @@ import {
   ChevronLeft, 
   ChevronRight, 
   AlertCircle, 
-  Info 
+  Info,
+  LogOut // Added LogOut icon
 } from "lucide-react";
 import GlassLayout from "../components/GlassLayout";
 import { useAuth } from "../context/AuthContext";
 import ManageStudents from "../components/ManageStudents";
 import StudentFormModal from "../components/StudentFormModal";
+import { useNavigate } from "react-router-dom"; // Added useNavigate
 import axios from "axios";
 
 const courseOptions = [
@@ -27,7 +29,8 @@ const courseOptions = [
 const statusOptions = ["Active", "Pending", "Graduated", "Dropped"];
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth(); // Added logout
+  const navigate = useNavigate(); // Added navigate
   const [students, setStudents] = useState([]);
   const [search, setSearch] = useState("");
   const [filterCourse, setFilterCourse] = useState("");
@@ -49,8 +52,16 @@ const Dashboard = () => {
 
   const API_BASE = "http://localhost:5000/api/students";
 
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    navigate("/login", { replace: true });
+  };
+
   // Fetch all students from database
   const fetchStudents = async () => {
+    if (!user) return;
+    
     setFetchLoading(true);
     try {
       const res = await axios.get(API_BASE);
@@ -97,6 +108,9 @@ const Dashboard = () => {
     }
   }, [user]);
 
+  // Don't render anything if no user
+  if (!user) return null;
+
   // Filter students based on search and course filter
   const filteredStudents = students.filter(
     (s) =>
@@ -115,9 +129,9 @@ const Dashboard = () => {
   const nextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages));
   const prevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1));
 
-  // Generate page numbers to display (with ellipsis for many pages)
+  // Generate page numbers
   const getPageNumbers = () => {
-    const delta = 2; // Number of pages to show on each side of current page
+    const delta = 2;
     const range = [];
     const rangeWithDots = [];
     let l;
@@ -179,7 +193,7 @@ const Dashboard = () => {
     );
   };
 
-  // Handle edit button click - passed to ManageStudents
+  // Handle edit button click
   const handleEditRequest = (student) => {
     setEditingStudent(student);
     setShowForm(true);
@@ -191,8 +205,6 @@ const Dashboard = () => {
     setShowForm(false);
     setEditingStudent(null);
   };
-
-  if (!user) return null;
 
   return (
     <GlassLayout 
@@ -255,35 +267,49 @@ const Dashboard = () => {
           )}
         </AnimatePresence>
 
-        {/* Header Stats Card */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
-        >
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-            <p className="text-gray-400 text-sm">Total Students</p>
-            <p className="text-2xl font-bold text-white">{students.length}</p>
-          </div>
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-            <p className="text-gray-400 text-sm">Active Students</p>
-            <p className="text-2xl font-bold text-green-400">
-              {students.filter(s => s.status === "Active").length}
-            </p>
-          </div>
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-            <p className="text-gray-400 text-sm">Pending</p>
-            <p className="text-2xl font-bold text-yellow-400">
-              {students.filter(s => s.status === "Pending").length}
-            </p>
-          </div>
-          <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
-            <p className="text-gray-400 text-sm">Graduated</p>
-            <p className="text-2xl font-bold text-blue-400">
-              {students.filter(s => s.status === "Graduated").length}
-            </p>
-          </div>
-        </motion.div>
+        {/* Header Stats Card with Logout Button */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 flex-1"
+          >
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+              <p className="text-gray-400 text-sm">Total Students</p>
+              <p className="text-2xl font-bold text-white">{students.length}</p>
+            </div>
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+              <p className="text-gray-400 text-sm">Active Students</p>
+              <p className="text-2xl font-bold text-green-400">
+                {students.filter(s => s.status === "Active").length}
+              </p>
+            </div>
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+              <p className="text-gray-400 text-sm">Pending</p>
+              <p className="text-2xl font-bold text-yellow-400">
+                {students.filter(s => s.status === "Pending").length}
+              </p>
+            </div>
+            <div className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10">
+              <p className="text-gray-400 text-sm">Graduated</p>
+              <p className="text-2xl font-bold text-blue-400">
+                {students.filter(s => s.status === "Graduated").length}
+              </p>
+            </div>
+          </motion.div>
+
+          {/* Logout Button */}
+          <motion.button
+            onClick={handleLogout}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex items-center justify-center gap-2 bg-red-500/20 hover:bg-red-500/30 border border-red-500/30 px-4 py-2 rounded-lg text-red-300 font-medium transition-all duration-300 whitespace-nowrap"
+            title="Logout"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </motion.button>
+        </div>
 
         {/* Search and Filter Section */}
         <div className="flex flex-col lg:flex-row lg:items-center gap-4 mb-6">
@@ -429,7 +455,7 @@ const Dashboard = () => {
               {filteredStudents.length !== students.length && ` (filtered from ${students.length} total)`}
             </motion.div>
 
-            {/* Animated Pagination Controls - < 1 2 3 ... 10 > */}
+            {/* Animated Pagination Controls */}
             {totalPages > 1 && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -454,7 +480,7 @@ const Dashboard = () => {
                   <ChevronLeft className="h-4 w-4 text-gray-400" />
                 </motion.button>
 
-                {/* Page Numbers with Animation */}
+                {/* Page Numbers */}
                 <div className="flex items-center gap-1">
                   {getPageNumbers().map((page, index) => (
                     page === '...' ? (
