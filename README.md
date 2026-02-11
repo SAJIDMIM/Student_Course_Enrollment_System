@@ -1,6 +1,6 @@
 
 
-                                                                  Campus.com
+                                                Campus.com
 
 📌 Project Overview
 
