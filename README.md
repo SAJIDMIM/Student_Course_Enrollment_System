@@ -1,3 +1,6 @@
+
+                                                                                                 Campus.com
+
 📌 Project Overview
 
 A full-stack web application designed for educational institutions to efficiently manage student course enrollments. This system provides administrators with a complete dashboard to perform CRUD operations on student records, search and filter capabilities, and real-time data synchronization between modern React frontend and Node.js/Express backend with MongoDB database.
