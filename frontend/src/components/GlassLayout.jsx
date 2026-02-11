@@ -1,6 +1,46 @@
 import React from "react";
 
-const GlassLayout = ({ children, title, subtitle, icon }) => {
+const GlassLayout = ({ children, title, subtitle, icon, fullWidth = false }) => {
+  // If fullWidth is true, render dashboard layout (no card)
+  if (fullWidth) {
+    return (
+      <div
+        className="min-h-screen px-6 py-8"
+        style={{ background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)" }}
+      >
+        <div className="mx-auto w-full">
+          {/* Header */}
+          <div className="flex items-center gap-4 mb-8">
+            {icon && (
+              <div
+                className="flex h-14 w-14 items-center justify-center rounded-2xl shadow-lg"
+                style={{ background: "rgba(52, 31, 151, 0.6)" }}
+              >
+                {icon}
+              </div>
+            )}
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-bold text-white">
+                {title}
+              </h1>
+              {subtitle && (
+                <p className="text-sm sm:text-base text-gray-300">
+                  {subtitle}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {/* Content - No card constraints */}
+          <div className="w-full">
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Default: Card view for Login and other pages
   return (
     <div
       className="flex items-center justify-center min-h-screen px-4 py-12"
