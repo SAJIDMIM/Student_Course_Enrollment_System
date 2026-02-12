@@ -1,6 +1,6 @@
 
 
-                                                                 Campus.com
+                                                            Campus.com
 
 📌 Project Overview
 
@@ -257,7 +257,7 @@ Clone Repository
 
 Open terminal and run the following command:
 
-git clone https://github.com/yourusername/student-enrollment-system.git
+git clone https://github.com/SAJIDMIM/Student_Course_Enrollment_System.git
 
 Navigate into the project directory:
 
