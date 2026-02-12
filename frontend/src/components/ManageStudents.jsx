@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Plus, Edit2, Trash2, Search, CheckCircle, AlertCircle } from "lucide-react";
+import { Plus, Edit2, Trash2, Search, CheckCircle, AlertCircle, Filter } from "lucide-react";
 import axios from "axios";
 import { useState } from "react";
 
@@ -14,15 +14,19 @@ const ManageStudents = ({
   filterCourse,
   onEdit,
   onRefresh,
-  onShowNotification
+  onShowNotification,
+  filterValidation
 }) => {
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
 
   // Handle delete student
   const handleDelete = async (id, studentName) => {
     if (!window.confirm(`Are you sure you want to delete ${studentName}'s record?`)) return;
     
     setDeleteLoading(true);
+    setDeletingId(id);
+    
     try {
       await axios.delete(`${API_BASE}/${id}`);
       console.log("Student deleted:", id);
@@ -46,6 +50,7 @@ const ManageStudents = ({
       );
     } finally {
       setDeleteLoading(false);
+      setDeletingId(null);
     }
   };
 
@@ -55,6 +60,7 @@ const ManageStudents = ({
         <div className="flex justify-center items-center py-20">
           <div className="relative">
             <div className="animate-spin rounded-full h-12 w-12 border-2 border-white/20 border-t-[#5e3bd7]"></div>
+            <p className="text-gray-400 text-sm mt-4">Loading students...</p>
           </div>
         </div>
       </div>
@@ -87,8 +93,8 @@ const ManageStudents = ({
                       <Plus className="h-8 w-8 text-gray-400" />
                     </div>
                     <p className="text-gray-300 text-lg font-medium mb-2">No students in the system</p>
-                    <p className="text-gray-400 text-sm mb-6">
-                      Get started by adding your first student
+                    <p className="text-gray-400 text-sm mb-6 max-w-md">
+                      Get started by adding your first student using the "Add New Student" button above.
                     </p>
                   </div>
                 </td>
@@ -98,9 +104,9 @@ const ManageStudents = ({
               displayedStudents.map((student, index) => (
                 <motion.tr
                   key={student._id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: index * 0.05 }}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.03 }}
                   className="hover:bg-white/5 transition-colors duration-150 group"
                 >
                   <td className="px-6 py-4">
@@ -142,11 +148,15 @@ const ManageStudents = ({
                         whileHover={{ scale: 1.1 }}
                         whileTap={{ scale: 0.9 }}
                         onClick={() => handleDelete(student._id, student.name)}
-                        className="p-1.5 rounded-lg hover:bg-white/10 transition-colors"
+                        className="p-1.5 rounded-lg hover:bg-white/10 transition-colors relative"
                         title="Delete Student"
                         disabled={deleteLoading}
                       >
-                        <Trash2 className="h-4 w-4 text-red-400" />
+                        {deleteLoading && deletingId === student._id ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/20 border-t-red-400"></div>
+                        ) : (
+                          <Trash2 className="h-4 w-4 text-red-400" />
+                        )}
                       </motion.button>
                     </div>
                   </td>
@@ -157,18 +167,31 @@ const ManageStudents = ({
               <tr>
                 <td colSpan={6} className="px-6 py-16">
                   <div className="flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 mb-4 rounded-full bg-white/5 flex items-center justify-center">
-                      <Search className="h-8 w-8 text-gray-400" />
+                    <div className="w-16 h-16 mb-4 rounded-full bg-yellow-500/10 flex items-center justify-center border border-yellow-500/30">
+                      <Filter className="h-8 w-8 text-yellow-400" />
                     </div>
                     <p className="text-gray-300 text-lg font-medium mb-2">No matching students found</p>
-                    <p className="text-gray-400 text-sm mb-6">
-                      {search && filterCourse 
+                    <p className="text-gray-400 text-sm mb-4 max-w-md">
+                      {filterValidation?.suggestions?.[0] || 
+                       (search && filterCourse && filterCourse !== "all"
                         ? `No students matching "${search}" in ${filterCourse}`
                         : search 
                         ? `No students matching "${search}"`
-                        : `No students in ${filterCourse}`
-                      }
+                        : filterCourse && filterCourse !== "all"
+                        ? `No students enrolled in ${filterCourse}`
+                        : "No results found with current filters"
+                       )}
                     </p>
+                    {filterValidation?.suggestions && filterValidation.suggestions.length > 0 && (
+                      <div className="bg-white/5 rounded-lg p-4 max-w-md text-left">
+                        <p className="text-sm font-medium text-gray-300 mb-2">Suggestions:</p>
+                        <ul className="text-sm text-gray-400 list-disc list-inside space-y-1">
+                          {filterValidation.suggestions.slice(0, 3).map((suggestion, index) => (
+                            <li key={index}>{suggestion}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </td>
               </tr>
@@ -176,6 +199,22 @@ const ManageStudents = ({
           </tbody>
         </table>
       </div>
+      
+      {/* Table Footer with Count */}
+      {students.length > 0 && (
+        <div className="px-6 py-3 border-t border-white/10 bg-white/5">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-400">
+              Showing {displayedStudents.length} of {students.length} students
+            </span>
+            {displayedStudents.length < students.length && (
+              <span className="text-gray-400">
+                Filtered by: {search && `"${search}"`} {filterCourse && filterCourse !== "all" && filterCourse}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
